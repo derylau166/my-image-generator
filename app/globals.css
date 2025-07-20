@@ -1,42 +1,249 @@
+/* app/globals.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --primary-color: #007bff;
+  --secondary-color: #6c757d;
+  --bg-color: #f8f9fa;
+  --card-bg: #ffffff;
+  --text-color: #343a40;
+  --border-color: #e9ecef;
+  --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 960px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.main-title {
+  text-align: center;
+  color: var(--primary-color);
+  font-size: 2.8rem;
+  margin-bottom: 40px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.generator-card, .history-card, .image-display-card {
+  background-color: var(--card-bg);
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-light);
+  margin-bottom: 30px;
+  border: 1px solid var(--border-color);
+}
+
+h2 {
+  color: var(--primary-color);
+  font-size: 1.8rem;
+  margin-bottom: 25px;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+.generator-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-color);
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group textarea,
+.form-group select {
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  width: 100%;
+  box-sizing: border-box; /* Penting untuk responsif */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+  outline: none;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-row {
+  display: flex;
+  gap: 20px;
+}
+
+.form-row .form-group {
+  flex: 1; /* Distribusi ruang yang sama */
+}
+
+.generate-button, .clear-history-button {
+  padding: 15px 25px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  width: fit-content; /* Sesuai konten */
+  align-self: flex-end; /* Pindahkan ke kanan bawah */
+}
+
+.generate-button:hover, .clear-history-button:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+.generate-button:disabled {
+  background-color: var(--secondary-color);
+  cursor: not-allowed;
+  transform: translateY(0);
+}
+
+/* History Section */
+.history-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.history-item {
+  background-color: #e2f2ff;
+  color: var(--primary-color);
+  padding: 8px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  white-space: nowrap; /* Mencegah prompt pecah baris */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Tambahkan elipsis jika terlalu panjang */
+  max-width: 100%; /* Batasi lebar */
+}
+
+.history-item:hover {
+  background-color: #cce7ff;
+  transform: translateY(-2px);
+}
+
+.clear-history-button {
+  background-color: #dc3545; /* Merah untuk clear */
+}
+
+.clear-history-button:hover {
+  background-color: #bd2130;
+}
+
+/* Image Display Section */
+.generated-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+  margin-top: 20px;
+}
+
+.loading-text {
+  text-align: center;
+  font-style: italic;
+  color: var(--secondary-color);
+}
+
+.image-link {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.image-link a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.image-link a:hover {
+  text-decoration: underline;
+}
+
+/* Responsivitas */
+@media (max-width: 768px) {
+  .container {
+    margin: 20px auto;
+    padding: 0 15px;
+  }
+
+  .main-title {
+    font-size: 2rem;
+    margin-bottom: 30px;
+  }
+
+  .generator-card, .history-card, .image-display-card {
+    padding: 20px;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+  }
+
+  .form-row {
+    flex-direction: column; /* Ubah tata letak form-row menjadi kolom */
+    gap: 15px;
+  }
+
+  .generate-button {
+    width: 100%; /* Tombol generate penuh di mobile */
+    align-self: stretch; /* Sesuaikan dengan lebar penuh */
+  }
+
+  .history-item {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    max-width: calc(50% - 5px); /* Dua kolom di mobile */
+  }
+
+  .clear-history-button {
+    width: 100%;
   }
 }
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
+@media (max-width: 480px) {
+  .main-title {
+    font-size: 1.8rem;
+  }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+  .history-item {
+    max-width: 100%; /* Satu kolom di layar sangat kecil */
   }
 }
