@@ -1,49 +1,165 @@
 /* app/globals.css */
-
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
+/* Variabel CSS untuk Light Mode */
 :root {
   --primary-color: #007bff;
   --secondary-color: #6c757d;
+  --text-color: #343a40;
   --bg-color: #f8f9fa;
   --card-bg: #ffffff;
-  --text-color: #343a40;
   --border-color: #e9ecef;
   --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.08);
+  --input-bg: #ffffff;
+}
+
+/* Variabel CSS untuk Dark Mode */
+html.dark-mode {
+  --primary-color: #66b2ff; /* Warna primer lebih terang */
+  --secondary-color: #adb5bd;
+  --text-color: #e9ecef; /* Teks lebih terang */
+  --bg-color: #1a202c; /* Background gelap */
+  --card-bg: #2d3748; /* Kartu lebih gelap */
+  --border-color: #4a5568;
+  --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.3); /* Bayangan lebih gelap */
+  --input-bg: #4a5568; /* Input gelap */
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
 }
 
 body {
   font-family: 'Poppins', sans-serif;
+  line-height: 1.6;
   background-color: var(--bg-color);
   color: var(--text-color);
-  margin: 0;
-  padding: 0;
-  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1; /* Pastikan konten utama mengisi ruang */
+  padding-top: 20px; /* Jarak dari header */
+  padding-bottom: 40px;
 }
 
 .container {
-  max-width: 960px;
-  margin: 40px auto;
+  max-width: 1080px; /* Lebar lebih besar */
+  margin: 0 auto;
   padding: 0 20px;
 }
 
-.main-title {
-  text-align: center;
-  color: var(--primary-color);
-  font-size: 2.8rem;
-  margin-bottom: 40px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
+/* Header */
+.header {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  padding: 15px 20px;
+  box-shadow: var(--shadow-light);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.generator-card, .history-card, .image-display-card {
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.header-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.header-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.lang-select {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    cursor: pointer;
+    font-size: 1rem;
+    -webkit-appearance: none; /* Hapus default arrow */
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-chevron-down'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    padding-right: 30px; /* Ruang untuk ikon */
+}
+
+
+.dark-mode-toggle {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: var(--text-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.dark-mode-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
+.dark-mode-toggle:hover {
+  background-color: var(--border-color);
+}
+
+/* Cards */
+.card {
   background-color: var(--card-bg);
   padding: 30px;
   border-radius: 12px;
   box-shadow: var(--shadow-light);
-  margin-bottom: 30px;
   border: 1px solid var(--border-color);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
+
+/* Generator Form */
+.generator-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Satu kolom default */
+    gap: 30px;
+}
+
+@media (min-width: 992px) { /* Untuk desktop */
+    .generator-grid {
+        grid-template-columns: 1.5fr 1fr; /* Form lebih lebar dari hasil gambar */
+    }
+}
+
 
 h2 {
   color: var(--primary-color);
@@ -57,11 +173,13 @@ h2 {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  position: relative; /* Untuk posisi tombol copy */
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
+  position: relative; /* Untuk posisi tombol copy */
 }
 
 .form-group label {
@@ -79,8 +197,10 @@ h2 {
   border-radius: 8px;
   font-size: 1rem;
   width: 100%;
-  box-sizing: border-box; /* Penting untuk responsif */
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  box-sizing: border-box;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
 }
 
 .form-group input:focus,
@@ -102,10 +222,29 @@ h2 {
 }
 
 .form-row .form-group {
-  flex: 1; /* Distribusi ruang yang sama */
+  flex: 1;
 }
 
-.generate-button, .clear-history-button {
+.copy-prompt-button {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--secondary-color);
+    padding: 5px;
+    border-radius: 5px;
+    transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.copy-prompt-button:hover {
+    color: var(--primary-color);
+    background-color: var(--border-color);
+}
+
+
+.generate-button, .clear-history-button, .action-button, .advanced-settings-toggle {
   padding: 15px 25px;
   background-color: var(--primary-color);
   color: white;
@@ -114,12 +253,16 @@ h2 {
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  width: fit-content; /* Sesuai konten */
-  align-self: flex-end; /* Pindahkan ke kanan bawah */
+  transition: background-color 0.3s ease, transform 0.2s ease, opacity 0.3s ease;
+  width: fit-content;
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
 }
 
-.generate-button:hover, .clear-history-button:hover {
+.generate-button:hover, .clear-history-button:hover, .action-button:hover, .advanced-settings-toggle:hover {
   background-color: #0056b3;
   transform: translateY(-2px);
 }
@@ -128,57 +271,150 @@ h2 {
   background-color: var(--secondary-color);
   cursor: not-allowed;
   transform: translateY(0);
+  opacity: 0.7;
 }
 
-/* History Section */
-.history-list {
+.advanced-settings-toggle {
+    background-color: var(--secondary-color);
+    align-self: flex-start; /* Posisikan di kiri */
+    margin-top: 10px;
+}
+
+.advanced-settings-toggle:hover {
+    background-color: #5a6268;
+}
+
+.advanced-settings-panel {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 15px;
+    background-color: var(--input-bg);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+
+/* Loading Animation */
+.loading-animation {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.spinner {
+    border: 4px solid var(--border-color);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 15px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-message {
+    color: #dc3545;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+/* Image Output Section */
+.image-output-section {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* History Grid */
+.history-card {
+  margin-top: 0; /* Sesuaikan margin di grid */
+}
+
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* Kolom otomatis */
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.history-item-container {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.history-item {
-  background-color: #e2f2ff;
-  color: var(--primary-color);
-  padding: 8px 15px;
-  border-radius: 20px;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  white-space: nowrap; /* Mencegah prompt pecah baris */
-  overflow: hidden;
-  text-overflow: ellipsis; /* Tambahkan elipsis jika terlalu panjang */
-  max-width: 100%; /* Batasi lebar */
+  transition: transform 0.2s ease;
 }
 
-.history-item:hover {
-  background-color: #cce7ff;
-  transform: translateY(-2px);
+.history-item-container:hover {
+  transform: translateY(-5px);
+}
+
+.history-thumbnail {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  transition: border-color 0.3s ease;
+}
+
+.history-item-container:hover .history-thumbnail {
+  border-color: var(--primary-color);
+}
+
+.history-prompt-text {
+  font-size: 0.8rem;
+  color: var(--secondary-color);
+  margin-top: 8px;
+  word-break: break-all;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Batasi 2 baris */
+  -webkit-box-orient: vertical;
 }
 
 .clear-history-button {
   background-color: #dc3545; /* Merah untuk clear */
+  margin-top: 20px;
+  align-self: flex-start; /* Posisikan di kiri */
 }
 
 .clear-history-button:hover {
   background-color: #bd2130;
 }
 
-/* Image Display Section */
-.generated-image {
+/* Generated Image Display */
+.generated-image-wrapper {
+  text-align: center;
+  min-height: 250px; /* Minimal tinggi agar tidak 'loncat' */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--bg-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.main-generated-image {
   max-width: 100%;
   height: auto;
   border-radius: 8px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   border: 1px solid var(--border-color);
-  margin-top: 20px;
-}
-
-.loading-text {
-  text-align: center;
-  font-style: italic;
-  color: var(--secondary-color);
 }
 
 .image-link {
@@ -196,54 +432,107 @@ h2 {
   text-decoration: underline;
 }
 
+.image-actions {
+    display: flex;
+    flex-wrap: wrap; /* Izinkan wrap di layar kecil */
+    gap: 15px;
+    justify-content: center;
+    margin-top: 25px;
+}
+
+.action-button {
+    background-color: #28a745; /* Contoh warna hijau untuk download */
+    font-size: 0.95rem;
+    padding: 10px 18px;
+}
+
+.action-button.share-button {
+    background-color: #17a2b8; /* Contoh warna biru muda untuk share */
+}
+
+.action-button.download-button {
+    background-color: #6f42c1; /* Contoh warna ungu untuk download */
+}
+
+
+.action-button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.action-button svg {
+    margin-right: 5px;
+}
+
+/* Footer */
+.footer {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+  padding: 20px;
+  text-align: center;
+  border-top: 1px solid var(--border-color);
+  margin-top: auto; /* Push footer ke bawah */
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.footer p {
+  margin-bottom: 5px;
+}
+
 /* Responsivitas */
 @media (max-width: 768px) {
-  .container {
-    margin: 20px auto;
-    padding: 0 15px;
+  .header-container {
+    flex-direction: column;
+    gap: 10px;
   }
-
+  .header-title {
+    font-size: 1.5rem;
+  }
   .main-title {
-    font-size: 2rem;
+    font-size: 2.2rem;
     margin-bottom: 30px;
   }
-
-  .generator-card, .history-card, .image-display-card {
+  .card {
     padding: 20px;
   }
-
   h2 {
     font-size: 1.5rem;
     margin-bottom: 20px;
   }
-
   .form-row {
-    flex-direction: column; /* Ubah tata letak form-row menjadi kolom */
+    flex-direction: column;
     gap: 15px;
   }
-
-  .generate-button {
-    width: 100%; /* Tombol generate penuh di mobile */
-    align-self: stretch; /* Sesuaikan dengan lebar penuh */
-  }
-
-  .history-item {
-    font-size: 0.85rem;
-    padding: 6px 12px;
-    max-width: calc(50% - 5px); /* Dua kolom di mobile */
-  }
-
-  .clear-history-button {
+  .generate-button, .clear-history-button, .advanced-settings-toggle {
     width: 100%;
+    align-self: stretch;
+  }
+  .history-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); /* Kolom lebih banyak di mobile */
+    gap: 10px;
+  }
+  .history-thumbnail {
+    width: 80px;
+    height: 80px;
+  }
+  .image-actions {
+      flex-direction: column;
+      gap: 10px;
+  }
+  .action-button {
+      width: 100%;
   }
 }
 
 @media (max-width: 480px) {
+  .header-title {
+    font-size: 1.3rem;
+  }
   .main-title {
     font-size: 1.8rem;
   }
-
-  .history-item {
-    max-width: 100%; /* Satu kolom di layar sangat kecil */
+  .history-grid {
+      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
   }
 }
