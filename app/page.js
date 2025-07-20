@@ -1,146 +1,282 @@
-'use client'; // Ini menandakan komponen ini adalah Client Component
+'use client';
 
-import { useState } from 'react'; // Untuk mengelola state di React
+import { useState, useEffect, useCallback } from 'react'; // Tambahkan useEffect dan useCallback
+import Head from 'next/head'; // Untuk SEO dan metadata
+
+// Daftar model AI yang tersedia (sesuaikan jika ada model lain dari Pollinations.ai)
+const AI_MODELS = [
+  { label: 'GPT Image (Default)', value: 'gptimage' },
+  { label: 'Turbo (Fast)', value: 'turbo' },
+  { label: 'Stable Diffusion', value: 'stable-diffusion' },
+  // Tambahkan model lain jika Pollinations.ai mendukungnya
+];
+
+// Daftar aspek rasio dengan nilai width/height yang sesuai
+const ASPECT_RATIOS = [
+  { label: 'Square (1:1)', value: '1:1', width: 1024, height: 1024 },
+  { label: 'Portrait (9:16)', value: '9:16', width: 768, height: 1366 }, // Contoh nilai
+  { label: 'Landscape (16:9)', value: '16:9', width: 1366, height: 768 }, // Contoh nilai
+  { label: 'Custom', value: 'custom', width: 1024, height: 1024 }, // Untuk input manual
+];
+
+// Daftar gaya (styles) yang bisa diterapkan pada prompt
+const IMAGE_STYLES = [
+  { label: 'None', value: '' },
+  { label: 'Cinematic', value: ', cinematic lighting' },
+  { label: 'Fantasy Art', value: ', fantasy art, highly detailed' },
+  { label: 'Cyberpunk', value: ', cyberpunk, neon light, futuristic' },
+  { label: 'Watercolor', value: ', watercolor painting' },
+  { label: 'Abstract', value: ', abstract art' },
+  { label: 'Hyperrealistic', value: ', hyperrealistic' },
+  { label: 'Anime Style', value: ', anime style' },
+  { label: 'Pixel Art', value: ', pixel art' },
+];
+
 
 export default function HomePage() {
-  // State untuk menyimpan nilai input dari pengguna
-  const [width, setWidth] = useState(1024);
-  const [height, setHeight] = useState(1024);
-  const [prompt, setPrompt] = useState('a beautiful landscape'); // Default prompt
-  const [seed, setSeed] = useState(''); // Default seed kosong
-  const [generatedImageUrl, setGeneratedImageUrl] = useState(''); // Untuk menyimpan URL gambar yang dihasilkan
-  const [isLoading, setIsLoading] = useState(false); // Untuk menunjukkan loading
+  const [prompt, setPrompt] = useState('a beautiful landscape');
+  const [selectedModel, setSelectedModel] = useState(AI_MODELS[0].value);
+  const [selectedRatio, setSelectedRatio] = useState(ASPECT_RATIOS[0].value);
+  const [width, setWidth] = useState(ASPECT_RATIOS[0].width);
+  const [height, setHeight] = useState(ASPECT_RATIOS[0].height);
+  const [seed, setSeed] = useState('');
+  const [selectedStyle, setSelectedStyle] = useState(IMAGE_STYLES[0].value);
+  const [generatedImageUrl, setGeneratedImageUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [promptHistory, setPromptHistory] = useState([]); // State untuk history prompt
+
+  // Efek untuk memuat history prompt dari localStorage saat komponen dimuat
+  useEffect(() => {
+    try {
+      const storedHistory = localStorage.getItem('deryLauGeneratorHistory');
+      if (storedHistory) {
+        setPromptHistory(JSON.parse(storedHistory));
+      }
+    } catch (error) {
+      console.error("Failed to load history from localStorage", error);
+    }
+  }, []);
+
+  // Efek untuk menyimpan history prompt ke localStorage setiap kali berubah
+  useEffect(() => {
+    try {
+      localStorage.setItem('deryLauGeneratorHistory', JSON.stringify(promptHistory));
+    } catch (error) {
+      console.error("Failed to save history to localStorage", error);
+    }
+  }, [promptHistory]);
+
+  // Handler saat aspek rasio berubah
+  const handleRatioChange = (e) => {
+    const ratioValue = e.target.value;
+    setSelectedRatio(ratioValue);
+    const selected = ASPECT_RATIOS.find(r => r.value === ratioValue);
+    if (selected && selected.value !== 'custom') {
+      setWidth(selected.width);
+      setHeight(selected.height);
+    }
+  };
+
+  // Fungsi untuk menambahkan prompt ke history
+  const addPromptToHistory = useCallback((newPrompt) => {
+    setPromptHistory(prevHistory => {
+      // Pastikan tidak ada duplikat dan batasi jumlah history
+      const updatedHistory = [newPrompt, ...prevHistory.filter(item => item !== newPrompt)].slice(0, 10); // Batasi 10 item
+      return updatedHistory;
+    });
+  }, []);
+
+  // Fungsi untuk menghapus seluruh history
+  const clearHistory = () => {
+    setPromptHistory([]);
+    // localStorage.removeItem('deryLauGeneratorHistory'); // Opsional: Hapus juga dari localStorage secara langsung
+  };
 
   // Fungsi untuk menangani submit form
-  const handleSubmit = (e) => {
-    e.preventDefault(); // Mencegah refresh halaman
-    setIsLoading(true); // Set loading menjadi true
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setGeneratedImageUrl(''); // Kosongkan gambar sebelumnya
+
+    let currentPrompt = prompt.trim();
+    if (selectedStyle) {
+      currentPrompt += selectedStyle; // Tambahkan gaya ke prompt
+    }
 
     // Bangun URL API Pollinations.ai berdasarkan input
-    // Kita hanya akan mengirim parameter yang diisi (kecuali untuk prompt yang wajib)
-    let baseUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
+    let baseUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(currentPrompt)}`;
 
-    // Tambahkan parameter opsional jika ada
-    if (width) baseUrl += `?width=${width}`;
-    if (height) baseUrl += `${width ? '&' : '?'}height=${height}`; // Tambahkan & jika width sudah ada
-    // Parameter lain (model, quality, enhance, nologo, private) bisa ditambahkan di sini
-    // Untuk contoh ini, kita akan fokus pada width, height, prompt, dan seed.
-    baseUrl += `${(width || height) ? '&' : '?'}model=gptimage&quality=hd&enhance=true&nologo=true&private=false`;
-    if (seed) baseUrl += `&seed=${seed}`;
+    // Tambahkan parameter
+    baseUrl += `?width=${width}`;
+    baseUrl += `&height=${height}`;
+    baseUrl += `&model=${selectedModel}`;
+    baseUrl += `&quality=hd&enhance=true&nologo=true&private=false`; // Parameter default
 
+    if (seed) {
+      baseUrl += `&seed=${seed}`;
+    }
 
-    setGeneratedImageUrl(baseUrl); // Set URL gambar yang akan ditampilkan
-    setIsLoading(false); // Set loading menjadi false
+    // Simpan prompt ke history setelah berhasil generate
+    addPromptToHistory(currentPrompt);
+
+    setGeneratedImageUrl(baseUrl);
+    setIsLoading(false);
   };
 
   return (
-    <div style={{
-      fontFamily: 'Arial, sans-serif',
-      maxWidth: '800px',
-      margin: '20px auto',
-      padding: '20px',
-      border: '1px solid #ccc',
-      borderRadius: '8px',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-    }}>
-      <h1 style={{ textAlign: 'center', color: '#333' }}>Image Generator</h1>
+    <>
+      <Head>
+        <title>DERY LAU GENERATOR AI</title>
+        <meta name="description" content="Generate amazing images with DERY LAU GENERATOR AI using Next.js and Pollinations.ai" />
+      </Head>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        <div>
-          <label htmlFor="prompt" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-            Prompt (Deskripsi Gambar):
-          </label>
-          <input
-            type="text"
-            id="prompt"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            required // Wajib diisi
-            style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
-          />
+      <div className="container">
+        <h1 className="main-title">DERY LAU GENERATOR AI</h1>
+
+        <div className="generator-card">
+          <form onSubmit={handleSubmit} className="generator-form">
+            <div className="form-group">
+              <label htmlFor="prompt">Prompt (Deskripsi Gambar):</label>
+              <textarea
+                id="prompt"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                required
+                rows="3"
+                placeholder="Ex: A futuristic city at sunset, highly detailed, cyberpunk style"
+              ></textarea>
+            </div>
+
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="model">Model AI:</label>
+                <select
+                  id="model"
+                  value={selectedModel}
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                >
+                  {AI_MODELS.map(model => (
+                    <option key={model.value} value={model.value}>{model.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="aspectRatio">Aspek Rasio:</label>
+                <select
+                  id="aspectRatio"
+                  value={selectedRatio}
+                  onChange={handleRatioChange}
+                >
+                  {ASPECT_RATIOS.map(ratio => (
+                    <option key={ratio.value} value={ratio.value}>{ratio.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {selectedRatio === 'custom' && (
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="width">Width:</label>
+                  <input
+                    type="number"
+                    id="width"
+                    value={width}
+                    onChange={(e) => setWidth(e.target.value)}
+                    min="1"
+                    max="2048"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="height">Height:</label>
+                  <input
+                    type="number"
+                    id="height"
+                    value={height}
+                    onChange={(e) => setHeight(e.target.value)}
+                    min="1"
+                    max="2048"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="form-row">
+              <div className="form-group">
+                <label htmlFor="seed">Seed (Optional):</label>
+                <input
+                  type="text"
+                  id="seed"
+                  value={seed}
+                  onChange={(e) => setSeed(e.target.value)}
+                  placeholder="Leave empty for random"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="style">Style:</label>
+                <select
+                  id="style"
+                  value={selectedStyle}
+                  onChange={(e) => setSelectedStyle(e.target.value)}
+                >
+                  {IMAGE_STYLES.map(style => (
+                    <option key={style.value} value={style.value}>{style.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" disabled={isLoading} className="generate-button">
+              {isLoading ? 'Generating...' : 'Generate Image'}
+            </button>
+          </form>
         </div>
 
-        <div>
-          <label htmlFor="width" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-            Width:
-          </label>
-          <input
-            type="number"
-            id="width"
-            value={width}
-            onChange={(e) => setWidth(e.target.value)}
-            min="1"
-            max="2048"
-            style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
-          />
-        </div>
+        {/* Prompt History Section */}
+        {promptHistory.length > 0 && (
+          <div className="history-card">
+            <h2>History Prompts</h2>
+            <div className="history-list">
+              {promptHistory.map((histPrompt, index) => (
+                <span
+                  key={index}
+                  className="history-item"
+                  onClick={() => setPrompt(histPrompt)}
+                  title="Click to use this prompt"
+                >
+                  {histPrompt.length > 50 ? histPrompt.substring(0, 50) + '...' : histPrompt}
+                </span>
+              ))}
+            </div>
+            <button onClick={clearHistory} className="clear-history-button">
+              Clear History
+            </button>
+          </div>
+        )}
 
-        <div>
-          <label htmlFor="height" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-            Height:
-          </label>
-          <input
-            type="number"
-            id="height"
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
-            min="1"
-            max="2048"
-            style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="seed" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-            Seed (Angka unik untuk hasil yang konsisten):
-          </label>
-          <input
-            type="text"
-            id="seed"
-            value={seed}
-            onChange={(e) => setSeed(e.target.value)}
-            style={{ width: '100%', padding: '10px', border: '1px solid #ddd', borderRadius: '4px' }}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={isLoading} // Tombol dinonaktifkan saat loading
-          style={{
-            padding: '12px 20px',
-            backgroundColor: '#0070f3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: isLoading ? 'not-allowed' : 'pointer',
-            fontSize: '16px',
-            marginTop: '10px'
-          }}
-        >
-          {isLoading ? 'Generating...' : 'Generate Image'}
-        </button>
-      </form>
-
-      {/* Bagian untuk menampilkan gambar */}
-      {generatedImageUrl && (
-        <div style={{ marginTop: '30px', textAlign: 'center' }}>
-          <h2 style={{ color: '#333' }}>Generated Image:</h2>
-          {isLoading ? (
-            <p>Loading image...</p>
-          ) : (
-            <img
-              src={generatedImageUrl}
-              alt="Generated Image"
-              style={{ maxWidth: '100%', height: 'auto', border: '1px solid #eee', borderRadius: '8px' }}
-            />
-          )}
-          <p>
-            <a href={generatedImageUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#0070f3', textDecoration: 'none' }}>
-              Open image in new tab
-            </a>
-          </p>
-        </div>
-      )}
-    </div>
+        {/* Generated Image Section */}
+        {generatedImageUrl && (
+          <div className="image-display-card">
+            <h2>Generated Image</h2>
+            {isLoading ? (
+              <p className="loading-text">Loading image...</p>
+            ) : (
+              <img
+                src={generatedImageUrl}
+                alt="Generated Image"
+                className="generated-image"
+              />
+            )}
+            <p className="image-link">
+              <a href={generatedImageUrl} target="_blank" rel="noopener noreferrer">
+                Open image in new tab
+              </a>
+            </p>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
